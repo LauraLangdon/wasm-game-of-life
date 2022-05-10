@@ -67,12 +67,8 @@ const drawGrid = () => {
 const renderLoop = () => {
     universe.tick();
 
-    drawGrid();
-    drawCells();
 
-    setTimeout(() => {
-        requestAnimationFrame(renderLoop);
-    }, 100)
+    requestAnimationFrame(renderLoop);
 }
 
 requestAnimationFrame(renderLoop);
