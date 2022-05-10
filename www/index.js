@@ -1,5 +1,6 @@
 import { Universe, Cell } from "wasm-game-of-life";
 import { memory } from "wasm-game-of-life/wasm_game_of_life_bg";
+import { universe_tick } from "wasm-game-of-life/wasm_game_of_life_bg.wasm";
 
 const width = window.prompt("Enter width:", 64);
 const height = window.prompt("Enter height:", 64);
@@ -13,6 +14,24 @@ canvas.height = (CELL_SIZE + 1) * height + 1;
 canvas.width = (CELL_SIZE + 1) * width + 1;
 
 const ctx = canvas.getContext('2d');
+
+canvas.addEventListener("click", event => {
+  const boundingRect = canvas.getBoundingClientRect();
+
+  const scaleX = canvas.width / boundingRect.width;
+  const scaleY = canvas.height / boundingRect.height;
+
+  const canvasLeft = (event.clientX - boundingRect.left) * scaleX;
+  const canvasTop = (event.clientY - boundingRect.top) * scaleY;
+
+  const row = Math.min(Math.floor(canvasTop / (CELL_SIZE + 1)), height - 1);
+  const col = Math.min(Math.floor(canvasLeft / (CELL_SIZE + 1)), width - 1);
+
+  universe.toggle_cell(row, col);
+
+  drawGrid();
+  drawCells();
+});
 
 const drawGrid = () => {
     ctx.beginPath();
@@ -64,11 +83,44 @@ const drawGrid = () => {
   };
   
 
+let animationId = null;
+
+let renderCountDown = 10;
+
 const renderLoop = () => {
+  renderCountDown--;
+    if (renderCountDown === 0){
+        renderCountDown = 10;
     universe.tick();
+    }
+    drawGrid();
+    drawCells();
+    animationId = requestAnimationFrame(renderLoop);
+};
 
+const isPaused = () => {
+  return animationId === null;
+};
 
-    requestAnimationFrame(renderLoop);
-}
+const playPauseButton = document.getElementById("play-pause");
 
-requestAnimationFrame(renderLoop);
+const play = () => {
+  playPauseButton.textContent = "⏸";
+  renderLoop();
+};
+
+const pause = () => {
+  playPauseButton.textContent = "▶";
+  cancelAnimationFrame(animationId);
+  animationId = null;
+};
+
+playPauseButton.addEventListener("click", event => {
+  if (isPaused()) {
+    play();
+  } else {
+    pause();
+  }
+});
+
+play();
