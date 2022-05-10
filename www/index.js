@@ -40,7 +40,7 @@ const drawGrid = () => {
   const drawCells = () => {
     const cellsPtr = universe.cells();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
-  
+    
     ctx.beginPath();
   
     for (let row = 0; row < height; row++) {
@@ -67,12 +67,8 @@ const drawGrid = () => {
 const renderLoop = () => {
     universe.tick();
 
-    drawGrid();
-    drawCells();
 
-    setTimeout(() => {
-        requestAnimationFrame(renderLoop);
-    }, 100)
+    requestAnimationFrame(renderLoop);
 }
 
 requestAnimationFrame(renderLoop);
