@@ -40,7 +40,7 @@ const drawGrid = () => {
   const drawCells = () => {
     const cellsPtr = universe.cells();
     const cells = new Uint8Array(memory.buffer, cellsPtr, width * height);
-  
+    
     ctx.beginPath();
   
     for (let row = 0; row < height; row++) {

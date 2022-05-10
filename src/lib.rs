@@ -1,10 +1,18 @@
 extern crate rand;
+extern crate web_sys;
 mod utils;
 use rand::thread_rng;
 use rand::Rng;
 
 use wasm_bindgen::prelude::*;
 use std::fmt;
+
+// A macro to provide `println!(..)`-style syntax for `console.log` logging.
+macro_rules! log {
+    ( $( $t:tt )* ) => {
+        web_sys::console::log_1(&format!( $( $t )* ).into());
+    }  
+}
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -53,6 +61,7 @@ impl Universe {
 #[wasm_bindgen]
 impl Universe {
     pub fn new(width: u32, height: u32) -> Universe {
+        panic!();
         let mut rng = thread_rng();
         let cells = (0..width * height)
             .map(|_| {
@@ -88,6 +97,10 @@ impl Universe {
         self.to_string()
     }
 
+    pub fn cells(&self) -> *const Cell {
+        self.cells.as_ptr()
+    }
+
     pub fn tick(&mut self) {
         let mut next = self.cells.clone();
 
@@ -97,7 +110,7 @@ impl Universe {
                 let cell = self.cells[idx];
                 let live_neighbors = self.live_neighbor_count(row, col);
 
-                let next_cell = match (cell, live_neighbors) {
+                let next_cell_state = match (cell, live_neighbors) {
                     (Cell::Alive, x) if x < 2 => Cell::Dead,
                     (Cell::Alive, 2) | (Cell::Alive, 3) => Cell::Alive,
                     (Cell::Alive, x) if x > 3 => Cell::Dead,
@@ -105,7 +118,17 @@ impl Universe {
                     (other_state, _) => other_state,
                 };
 
-                next[idx] = next_cell;
+                if cell != next_cell_state {
+                log!(
+                    "cell[{}, {}] is initially {:?} and will change to {:?}",
+                    row,
+                    col,
+                    cell,
+                    next_cell_state
+                );
+                }
+
+                next[idx] = next_cell_state;
             }
         }
 
